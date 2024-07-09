@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.example.Server.UserHandler;
 import org.junit.jupiter.api.*;
 import static org.mockito.Mockito.*;
 import java.io.*;

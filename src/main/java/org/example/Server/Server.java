@@ -30,11 +30,6 @@ public class Server implements Runnable {
         }
     }
 
-    public static void main(String[] args) {
-        Server server = new Server();
-        server.run();
-    }
-
     public void stopAcceptingConnections() {
         try {
             serverSocket.close();
@@ -50,12 +45,16 @@ public class Server implements Runnable {
         try {
             while (!serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
-                logger.info("New connection accepted from " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort());
+                logger.info("New connection accepted from {}:{}", socket.getInetAddress().getHostAddress(), socket.getPort());
                 Thread.ofVirtual().start(new UserHandler(socket));
             }
         } catch (IOException e) {
             stopAcceptingConnections();
             throw new RuntimeException(e);
         }
+    }
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.run();
     }
 }

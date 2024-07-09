@@ -19,8 +19,8 @@ public class UserHandler implements Runnable {
     private String username;
 
     static {
-        users = new ArrayList<>();
         logger = LogManager.getLogger(UserHandler.class);
+        users = new ArrayList<>();
     }
 
     public void setUsername(String username) {
@@ -53,7 +53,7 @@ public class UserHandler implements Runnable {
     }
 
     private void broadcastSystemMessage(String message) {
-        broadcastMessage("SYSTEM: " + message, true);
+        broadcastMessage("SYSTEM: " + message);
     }
 
     private void sendMessage(String message, String username) {
@@ -75,19 +75,17 @@ public class UserHandler implements Runnable {
         logger.trace("Sending message to user " + username + " finished");
     }
 
-    private void broadcastMessage(String message, boolean includingSender) {
+    private void broadcastMessage(String message) {
         logger.info("Broadcasting message: " + message);
         for (UserHandler user : users) {
-            if (includingSender || !user.username.equals(username)) {
-                try {
-                    user.writer.write(message);
-                    user.writer.newLine();
-                    user.writer.flush();
-                } catch (IOException e) {
-                    logger.error("Error while sending message to user " + user.username + " from " + username);
-                    Misc.close(connection, reader, writer);
-                    return;
-                }
+            try {
+                user.writer.write(message);
+                user.writer.newLine();
+                user.writer.flush();
+            } catch (IOException e) {
+                logger.error("Error while sending message to user " + user.username + " from " + username);
+                Misc.close(connection, reader, writer);
+                return;
             }
         }
         logger.trace("Broadcast message to all users finished");
@@ -117,14 +115,13 @@ public class UserHandler implements Runnable {
                         sendMessage(username + ": " + message, username);
                         sendMessage(username + ": " + message, receiverName);
                     } else {
-                        switch (message) {
-                            case "/list" -> {
-                                sendMessage("Now connected " + users.size() + " users:", username);
-                                for (int i = 0; i < users.size(); i++) {
-                                    sendMessage("    " + users.get(i).username, username);
-                                }
+                        if (message.equals("/list")) {
+                            sendMessage("Now connected " + users.size() + " users:", username);
+                            for (UserHandler user : users) {
+                                sendMessage("    " + user.username, username);
                             }
-                            default -> broadcastMessage(username + ": " + message, true);
+                        } else {
+                            broadcastMessage(username + ": " + message);
                         }
                     }
                 }

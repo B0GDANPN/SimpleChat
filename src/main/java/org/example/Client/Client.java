@@ -36,7 +36,6 @@ public class Client extends Frame implements Runnable {
         Label label;
         TextField textField;
         Button submitButton;
-        List<String> activeUsers;
 
         public UsernameForm() {
             logger.info("Creating form for username asking");
@@ -65,13 +64,7 @@ public class Client extends Frame implements Runnable {
                 reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
 
-                activeUsers = new ArrayList<>();
                 String buffer = reader.readLine();
-                int numClients = Integer.parseInt(buffer);
-                for (int i = 0; i < numClients; i++) {
-                    buffer = reader.readLine();
-                    activeUsers.add(buffer);
-                }
             } catch (IOException e) {
                 Misc.close(connection, reader, writer);
                 throw new UncheckedIOException(e);
@@ -84,15 +77,7 @@ public class Client extends Frame implements Runnable {
         @Override
         public void actionPerformed(ActionEvent evt) {
             String uname = textField.getText();
-            boolean unique = true;
-            for (String user : activeUsers) {
-                if (user.equals(uname)) {
-                    unique = false;
-                    break;
-                }
-            }
 
-            if (unique) {
                 if (uname.contains(" ")) {
                     logger.info("Username with spaces entered, asking again");
                     textField.setText("Username cannot contain spaces, select other please");
@@ -103,10 +88,6 @@ public class Client extends Frame implements Runnable {
                     dispose();
                     logger.info("Closing username input form");
                 }
-            } else {
-                logger.info("Non unique username input, asking again");
-                textField.setText("Non-unique username, select other please");
-            }
         }
     }
 
@@ -132,7 +113,7 @@ public class Client extends Frame implements Runnable {
         inputField.addActionListener(e -> {
             String input = inputField.getText();
             logger.info("Received message from ui, sending to server: " + input);
-            inputField.setText("");
+            inputField.setText("");//оправка сообщения от пользователя
 
             try {
                 writer.write(input);
@@ -163,7 +144,7 @@ public class Client extends Frame implements Runnable {
         Thread.ofVirtual().start(
                 () -> {
                     while (connection.isConnected() && !exiting) {
-                        try {
+                        try {//присылает SYSTEM Coneected //сообщение// .. если не закрыт
                             String message = reader.readLine();
                             if (message == null) {
                                 connection.close();
